@@ -1,9 +1,298 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-    <title>Benim Web Sitem</title>
+  <meta charset="UTF-8" />
+  <title>Doğum Günü Kutlaması</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: 'Poppins', Arial, sans-serif;
+      overflow: hidden;
+    }
+    .background {
+      background: url('nisa.jpg') no-repeat center center/cover;
+      position: fixed; width: 100%; height: 100%;
+      z-index: -2;
+      transition: opacity 0.5s ease;
+    }
+    .dark-overlay {
+      position: fixed; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: -1;
+    }
+    .content {
+      display: flex; justify-content: center; align-items: center;
+      height: 100%; color: white; text-align: center; padding: 20px;
+      flex-direction: column;
+      position: relative;
+      z-index: 2;
+    }
+    h1 {
+      font-size: 3rem; margin-bottom: 10px;
+      text-shadow: 0 0 15px rgba(0,0,0,0.7);
+      transition: all 0.5s ease;
+    }
+    p {
+      font-size: 1.2rem; margin: 0;
+      text-shadow: 0 0 10px rgba(0,0,0,0.6);
+      transition: all 0.5s ease;
+    }
+    #clickMessage {
+      position: fixed;
+      bottom: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.75);
+      cursor: pointer;
+      user-select: none;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.3s ease;
+      font-weight: 600;
+      z-index: 10;
+    }
+    #clickMessage:hover {
+      color: #64b5f6;
+      text-decoration: underline;
+    }
+    #clickMessage .play-icon {
+      font-size: 1.3rem;
+      color: #42a5f5;
+      filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
+    }
+    
+    .buttons-container {
+      display: none;
+      gap: 20px;
+      margin-top: 30px;
+      z-index: 20;
+    }
+    .choice-btn {
+      padding: 12px 30px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      z-index: 20;
+      position: relative;
+    }
+    #yesBtn {
+      background-color: #4CAF50;
+      color: white;
+    }
+    #noBtn {
+      background-color: #f44336;
+      color: white;
+    }
+    .choice-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    
+    .heart {
+      position: absolute;
+      pointer-events: none;
+      animation: float 4s ease-in-out infinite;
+      z-index: 100;
+    }
+    
+    @keyframes float {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    .zoomed-photo-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: black;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow: hidden;
+      z-index: 1;
+      display: none;
+    }
+    
+    .zoomed-photo {
+      height: auto;
+      width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      object-position: top center;
+    }
+  </style>
 </head>
 <body>
-    <h1>Merhaba Dünya!</h1>
+  <div class="background" id="background"></div>
+  <div class="zoomed-photo-container" id="zoomedContainer">
+    <img class="zoomed-photo" id="zoomedPhoto" src="nisa2.jpg">
+  </div>
+  <div class="dark-overlay"></div>
+  <div class="content">
+    <h1 id="mainTitle">İyi ki doğdun Nisa!</h1>
+    <p id="subText">Seninle nice güzel yaşlara ✨</p>
+    <div class="buttons-container" id="buttonsContainer">
+      <button class="choice-btn" id="yesBtn">EVET</button>
+      <button class="choice-btn" id="noBtn">HAYIR</button>
+    </div>
+  </div>
+  <div id="clickMessage" title="Tıklayınca müzik başlar">
+    Lütfen tıklayınız
+    <span class="play-icon">▶️</span>
+  </div>
+  <audio id="birthdaySong" preload="auto" loop></audio>
+
+  <script>
+    const audio = document.getElementById('birthdaySong');
+    const clickMessage = document.getElementById('clickMessage');
+    const mainTitle = document.getElementById('mainTitle');
+    const subText = document.getElementById('subText');
+    const buttonsContainer = document.getElementById('buttonsContainer');
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const background = document.getElementById('background');
+    const zoomedContainer = document.getElementById('zoomedContainer');
+    const zoomedPhoto = document.getElementById('zoomedPhoto');
+
+    const songs = [
+      {src: 'nisa.mp3', startTime: 0},
+      {src: 'nisa2.mp3', startTime: 57}
+    ];
+
+    let currentSongIndex = 0;
+    let isSecondPhase = false;
+    let isFinalPhase = false;
+
+    function playSong(index) {
+      audio.src = songs[index].src;
+      audio.currentTime = songs[index].startTime;
+      audio.play();
+    }
+
+    function createHearts() {
+      const colors = ['#ff0000', '#ff69b4', '#ff1493', '#ff00ff', '#ff6347'];
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          const heart = document.createElement('div');
+          heart.innerHTML = '❤️';
+          heart.classList.add('heart');
+          
+          const size = Math.random() * 2 + 1;
+          heart.style.fontSize = `${size}em`;
+          
+          const startX = Math.random() * window.innerWidth;
+          heart.style.left = `${startX}px`;
+          heart.style.top = `${window.innerHeight + 50}px`;
+          
+          const colorIndex = Math.floor(Math.random() * colors.length);
+          heart.style.color = colors[colorIndex];
+          
+          const duration = Math.random() * 3 + 3;
+          heart.style.animationDuration = `${duration}s`;
+          
+          document.body.appendChild(heart);
+          
+          setTimeout(() => {
+            heart.remove();
+          }, duration * 1000);
+        }, i * 100);
+      }
+    }
+
+    window.onload = () => {
+      setTimeout(() => {
+        clickMessage.style.display = 'flex';
+      }, 2000);
+    };
+
+    clickMessage.addEventListener('click', () => {
+      if(currentSongIndex === 0) {
+        playSong(0);
+        clickMessage.style.display = 'none';
+        setTimeout(() => {
+          currentSongIndex = 1;
+          clickMessage.style.display = 'flex';
+        }, 3000);
+      } else if(currentSongIndex === 1 && !isSecondPhase) {
+        isSecondPhase = true;
+        playSong(1);
+        clickMessage.style.display = 'none';
+        
+        // Arka planı opacity ile gizle
+        background.style.opacity = '0';
+        zoomedContainer.style.display = 'flex';
+        
+        mainTitle.textContent = 'İYİ Kİ DOĞMUŞ NİSA';
+        subText.textContent = '';
+        
+        setTimeout(() => {
+          clickMessage.style.display = 'flex';
+        }, 3000);
+      } else if(isSecondPhase && !isFinalPhase) {
+        isFinalPhase = true;
+        clickMessage.style.display = 'none';
+        mainTitle.textContent = 'benimlen bjk maçına gider misin (hayır demek yasak) ?';
+        subText.textContent = '';
+        buttonsContainer.style.display = 'flex';
+      }
+    });
+
+    noBtn.addEventListener('mouseover', (e) => {
+      e.preventDefault();
+      const maxX = window.innerWidth - noBtn.offsetWidth;
+      const maxY = window.innerHeight - noBtn.offsetHeight;
+      
+      const randomX = Math.floor(Math.random() * maxX);
+      const randomY = Math.floor(Math.random() * maxY);
+      
+      noBtn.style.position = 'absolute';
+      noBtn.style.left = `${randomX}px`;
+      noBtn.style.top = `${randomY}px`;
+    });
+
+    yesBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      buttonsContainer.style.display = 'none';
+      mainTitle.textContent = 'İYİ İŞTE BİLİYORDUM KABUL EDECEĞİNİ 😊';
+      subText.textContent = '';
+      createHearts();
+      const heartInterval = setInterval(createHearts, 1000);
+      setTimeout(() => {
+        clearInterval(heartInterval);
+      }, 5000);
+    });
+
+    document.addEventListener('click', function(e) {
+      if(e.target === yesBtn || e.target === noBtn) {
+        e.preventDefault();
+        if(e.target === yesBtn) {
+          buttonsContainer.style.display = 'none';
+          mainTitle.textContent = 'told you , see ya later ';
+          subText.textContent = '';
+          createHearts();
+          const heartInterval = setInterval(createHearts, 1000);
+          setTimeout(() => {
+            clearInterval(heartInterval);
+          }, 5000);
+        }
+      }
+    });
+  </script>
 </body>
 </html>
