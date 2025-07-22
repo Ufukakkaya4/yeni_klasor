@@ -43,6 +43,7 @@
         .buttons {
             display: flex;
             gap: 20px;
+            position: relative;
         }
 
         button {
@@ -63,7 +64,9 @@
         #hayir {
             background-color: #f44336;
             color: white;
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .confetti {
@@ -93,25 +96,31 @@
     </div>
 
     <script>
-        // Butonların çalışması
         const evetBtn = document.getElementById('evet');
         const hayirBtn = document.getElementById('hayir');
 
-        // Hayır butonu kaçsın
+        // Hayır butonu ekran dışına çıkmadan kaçsın
         hayirBtn.addEventListener('mouseover', () => {
-            const x = Math.random() * (window.innerWidth - 100);
-            const y = Math.random() * (window.innerHeight - 100);
-            hayirBtn.style.transform = `translate(${x}px, ${y}px)`;
+            const btnWidth = hayirBtn.offsetWidth;
+            const btnHeight = hayirBtn.offsetHeight;
+
+            const maxX = window.innerWidth - btnWidth;
+            const maxY = window.innerHeight - btnHeight;
+
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
+
+            hayirBtn.style.left = `${randomX}px`;
+            hayirBtn.style.top = `${randomY}px`;
         });
 
-        // Evet butonuna basınca
+        // Evet'e tıklanınca konfeti ve mesaj
         evetBtn.addEventListener('click', () => {
             document.querySelector('h1').textContent = 'BİLDİNİZ!';
             document.querySelector('.buttons').style.display = 'none';
             createConfetti();
         });
 
-        // Konfeti efekti (DÜZELTİLMİŞ)
         function createConfetti() {
             const colors = ['#ff0', '#f00', '#0f0', '#00f', '#f0f', '#0ff'];
 
@@ -123,7 +132,6 @@
                     confetti.style.top = '-10px';
                     confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
-                    // Rastgele şekiller
                     if (Math.random() > 0.5) {
                         confetti.style.borderRadius = '50%';
                         confetti.style.width = '8px';
@@ -135,7 +143,6 @@
 
                     document.body.appendChild(confetti);
 
-                    // 3 saniye sonra sil
                     setTimeout(() => {
                         confetti.remove();
                     }, 3000);
