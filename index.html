@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Akif Hoca Tribute</title>
     <style>
         body, html {
@@ -54,6 +54,7 @@
             cursor: pointer;
             font-weight: bold;
             transition: transform 0.3s;
+            position: relative;
         }
 
         #evet {
@@ -64,9 +65,6 @@
         #hayir {
             background-color: #f44336;
             color: white;
-            position: absolute;
-            top: 0;
-            left: 0;
         }
 
         .confetti {
@@ -99,22 +97,19 @@
         const evetBtn = document.getElementById('evet');
         const hayirBtn = document.getElementById('hayir');
 
-        // Hayır butonu ekran dışına çıkmadan kaçsın
+        // Hayır butonunu ekran içinde kaçır
         hayirBtn.addEventListener('mouseover', () => {
-            const btnWidth = hayirBtn.offsetWidth;
-            const btnHeight = hayirBtn.offsetHeight;
-
-            const maxX = window.innerWidth - btnWidth;
-            const maxY = window.innerHeight - btnHeight;
+            const maxX = window.innerWidth - hayirBtn.offsetWidth - 20;
+            const maxY = window.innerHeight - hayirBtn.offsetHeight - 20;
 
             const randomX = Math.random() * maxX;
             const randomY = Math.random() * maxY;
 
+            hayirBtn.style.position = "fixed";
             hayirBtn.style.left = `${randomX}px`;
             hayirBtn.style.top = `${randomY}px`;
         });
 
-        // Evet'e tıklanınca konfeti ve mesaj
         evetBtn.addEventListener('click', () => {
             document.querySelector('h1').textContent = 'BİLDİNİZ!';
             document.querySelector('.buttons').style.display = 'none';
@@ -123,7 +118,6 @@
 
         function createConfetti() {
             const colors = ['#ff0', '#f00', '#0f0', '#00f', '#f0f', '#0ff'];
-
             for (let i = 0; i < 100; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
@@ -142,7 +136,6 @@
                     }
 
                     document.body.appendChild(confetti);
-
                     setTimeout(() => {
                         confetti.remove();
                     }, 3000);
