@@ -10,20 +10,13 @@
             height: 100%;
             font-family: Arial, sans-serif;
             overflow: hidden;
-        }
-
-        .background {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('necmettin.jpg') no-repeat center center;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('necmettin.jpg') no-repeat center center;
             background-size: cover;
-            position: fixed;
-            width: 100%;
-            height: 100%;
             filter: brightness(90%);
         }
 
         .content {
             position: relative;
-            z-index: 2;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -32,21 +25,24 @@
             text-align: center;
             color: white;
             padding: 20px;
+            z-index: 2;
         }
 
         h1 {
             font-size: 2.5rem;
             margin-bottom: 30px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
         }
 
         .buttons {
-            display: flex;
-            gap: 20px;
             position: relative;
+            width: 300px;
+            height: 60px;
+            margin-top: 20px;
         }
 
         button {
+            position: absolute;
             padding: 12px 25px;
             font-size: 1.2rem;
             border: none;
@@ -54,17 +50,21 @@
             cursor: pointer;
             font-weight: bold;
             transition: transform 0.3s;
-            position: relative;
+            user-select: none;
         }
 
         #evet {
             background-color: #4CAF50;
             color: white;
+            left: 0;
+            top: 0;
         }
 
         #hayir {
             background-color: #f44336;
             color: white;
+            left: 160px;
+            top: 0;
         }
 
         .confetti {
@@ -84,7 +84,6 @@
     </style>
 </head>
 <body>
-    <div class="background"></div>
     <div class="content">
         <h1>Akif Hoca evrenin en iyi elektronikçisidir.</h1>
         <div class="buttons">
@@ -97,17 +96,20 @@
         const evetBtn = document.getElementById('evet');
         const hayirBtn = document.getElementById('hayir');
 
-        // Hayır butonunu ekran içinde kaçır
-        hayirBtn.addEventListener('mouseover', () => {
-            const maxX = window.innerWidth - hayirBtn.offsetWidth - 20;
-            const maxY = window.innerHeight - hayirBtn.offsetHeight - 20;
+        hayirBtn.addEventListener('mouseover', (e) => {
+            e.preventDefault();
 
-            const randomX = Math.random() * maxX;
-            const randomY = Math.random() * maxY;
+            // Buton kaçarken ekran dışına çıkmasın diye limitler:
+            const maxX = window.innerWidth - hayirBtn.offsetWidth - 10;
+            const maxY = window.innerHeight - hayirBtn.offsetHeight - 10;
 
-            hayirBtn.style.position = "fixed";
-            hayirBtn.style.left = `${randomX}px`;
-            hayirBtn.style.top = `${randomY}px`;
+            // Rastgele yeni pozisyonlar hesapla:
+            const randomX = Math.floor(Math.random() * maxX);
+            const randomY = Math.floor(Math.random() * maxY);
+
+            hayirBtn.style.position = 'fixed';
+            hayirBtn.style.left = randomX + 'px';
+            hayirBtn.style.top = randomY + 'px';
         });
 
         evetBtn.addEventListener('click', () => {
@@ -118,6 +120,7 @@
 
         function createConfetti() {
             const colors = ['#ff0', '#f00', '#0f0', '#00f', '#f0f', '#0ff'];
+
             for (let i = 0; i < 100; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
@@ -136,9 +139,8 @@
                     }
 
                     document.body.appendChild(confetti);
-                    setTimeout(() => {
-                        confetti.remove();
-                    }, 3000);
+
+                    setTimeout(() => confetti.remove(), 3000);
                 }, i * 50);
             }
         }
