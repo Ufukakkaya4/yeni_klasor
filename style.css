@@ -1,0 +1,75 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+    overflow: hidden; /* Butonların kayması için önemli */
+    position: relative; /* Butonların konumlandırılması için */
+}
+
+.container {
+    text-align: center;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.buttons {
+    margin-top: 20px;
+}
+
+button {
+    padding: 12px 25px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    position: absolute; /* Butonların hareket etmesi için */
+}
+
+#yesBtn {
+    background-color: #4CAF50;
+    color: white;
+    left: 45%; /* Başlangıç konumlandırması */
+    bottom: 30%;
+}
+
+#noBtn {
+    background-color: #f44336;
+    color: white;
+    left: 55%; /* Başlangıç konumlandırması */
+    bottom: 30%;
+    transition: all 0.2s ease-out; /* Kaçış animasyonu */
+}
+
+#yesBtn:hover {
+    background-color: #45a049;
+}
+
+#celebration {
+    text-align: center;
+    background-color: #e6ffe6;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+.hidden {
+    display: none;
+}
