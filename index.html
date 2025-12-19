@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mustafa Berk Aydoğan > Nicola Tesla</title>
+    <title>My Website</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -59,6 +59,9 @@
             width: 100px;
             height: 50px;
             position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
 
         #yesBtn {
@@ -117,7 +120,6 @@
             }
         }
 
-        /* Mobile için responsive ayarlar */
         @media (max-width: 768px) {
             .container {
                 min-width: 300px;
@@ -132,6 +134,7 @@
                 width: 90px;
                 height: 45px;
                 font-size: 14px;
+                padding: 10px 20px;
             }
             
             #celebration h2 {
@@ -159,78 +162,123 @@
             const noBtn = document.getElementById('noBtn');
             const celebrationDiv = document.getElementById('celebration');
             const container = document.querySelector('.container');
-            const buttonsDiv = document.querySelector('.buttons');
 
-            // Buton başlangıç pozisyonlarını kaydet
-            const originalNoBtnPosition = {
-                left: noBtn.offsetLeft,
-                top: noBtn.offsetTop
-            };
+            let lastMoveTime = 0;
+            const MOVE_COOLDOWN = 100; // 100ms cooldown
+            const ESCAPE_DISTANCE = 150; // Butonun kaçma mesafesi
 
-            // Hayır butonu için SIKI SINIRLAR
-            noBtn.addEventListener('mouseover', (e) => {
-                const buttonsRect = buttonsDiv.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                
-                // Butonun hareket edebileceği MÜSAADE EDİLEN ALAN
-                // Butonların etrafında 300px x 300px'lik bir alanda kalacak
-                const allowedArea = {
-                    minX: buttonsRect.left - 150,
-                    maxX: buttonsRect.right + 150,
-                    minY: containerRect.top - 150,
-                    maxY: containerRect.bottom + 50
-                };
-                
-                // Ekran sınırlarını da kontrol et
+            // Butonu hareket ettiren fonksiyon
+            function moveNoBtn() {
+                const now = Date.now();
+                if (now - lastMoveTime < MOVE_COOLDOWN) return;
+                lastMoveTime = now;
+
                 const screenWidth = window.innerWidth;
                 const screenHeight = window.innerHeight;
                 const buttonWidth = noBtn.offsetWidth;
                 const buttonHeight = noBtn.offsetHeight;
                 
-                // KISITLI RASTGELE POZİSYON
+                // Geniş hareket alanı (ekranın %80'i)
+                const safeMinX = 20;
+                const safeMaxX = screenWidth - buttonWidth - 20;
+                const safeMinY = 20;
+                const safeMaxY = screenHeight - buttonHeight - 20;
+                
+                // Her seferinde tamamen farklı yere kaç
                 let newLeft, newTop;
                 let attempts = 0;
-                const maxAttempts = 10;
                 
                 do {
-                    // Butonların yakın çevresinde rastgele pozisyon
-                    const offsetX = (Math.random() - 0.5) * 300; // -150px ile +150px arası
-                    const offsetY = (Math.random() - 0.5) * 200; // -100px ile +100px arası
+                    // Büyük mesafelerde kaç (ekranın farklı bölgelerine)
+                    const quadrant = Math.floor(Math.random() * 4);
+                    switch(quadrant) {
+                        case 0: // Sol üst
+                            newLeft = Math.random() * (screenWidth * 0.4);
+                            newTop = Math.random() * (screenHeight * 0.4);
+                            break;
+                        case 1: // Sağ üst
+                            newLeft = screenWidth * 0.6 + Math.random() * (screenWidth * 0.4);
+                            newTop = Math.random() * (screenHeight * 0.4);
+                            break;
+                        case 2: // Sol alt
+                            newLeft = Math.random() * (screenWidth * 0.4);
+                            newTop = screenHeight * 0.6 + Math.random() * (screenHeight * 0.4);
+                            break;
+                        case 3: // Sağ alt
+                            newLeft = screenWidth * 0.6 + Math.random() * (screenWidth * 0.4);
+                            newTop = screenHeight * 0.6 + Math.random() * (screenHeight * 0.4);
+                            break;
+                    }
                     
-                    newLeft = buttonsRect.left + offsetX;
-                    newTop = buttonsRect.top + offsetY;
-                    
-                    // Ekran sınırlarını kontrol et
-                    newLeft = Math.max(20, Math.min(newLeft, screenWidth - buttonWidth - 20));
-                    newTop = Math.max(20, Math.min(newTop, screenHeight - buttonHeight - 20));
-                    
-                    // Aşırı uzaklaşmaması için mesafe kontrolü
-                    const distanceFromOriginal = Math.sqrt(
-                        Math.pow(newLeft - originalNoBtnPosition.left, 2) + 
-                        Math.pow(newTop - originalNoBtnPosition.top, 2)
-                    );
-                    
-                    // 400px'den fazla uzaklaşamaz
-                    if (distanceFromOriginal < 400) break;
+                    // Sınırları kontrol et
+                    newLeft = Math.max(safeMinX, Math.min(newLeft, safeMaxX));
+                    newTop = Math.max(safeMinY, Math.min(newTop, safeMaxY));
                     
                     attempts++;
-                } while (attempts < maxAttempts);
+                    // Minimum 100px mesafe garantisi
+                    const currentRect = noBtn.getBoundingClientRect();
+                    const distance = Math.sqrt(
+                        Math.pow(newLeft - currentRect.left, 2) + 
+                        Math.pow(newTop - currentRect.top, 2)
+                    );
+                    
+                    if (distance > 100) break;
+                } while (attempts < 5);
                 
-                // Eğer uygun pozisyon bulamazsa orijinal pozisyona yakın bir yere git
-                if (attempts >= maxAttempts) {
-                    newLeft = originalNoBtnPosition.left + (Math.random() - 0.5) * 100;
-                    newTop = originalNoBtnPosition.top + (Math.random() - 0.5) * 100;
-                }
-                
-                // Son kontroller
-                newLeft = Math.max(20, Math.min(newLeft, screenWidth - buttonWidth - 20));
-                newTop = Math.max(20, Math.min(newTop, screenHeight - buttonHeight - 20));
-                
-                // Pozisyonu uygula
+                // Animasyonlu hareket
+                noBtn.style.transition = 'all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
                 noBtn.style.position = 'fixed';
                 noBtn.style.left = `${newLeft}px`;
                 noBtn.style.top = `${newTop}px`;
                 noBtn.style.zIndex = '10';
+                
+                // Telefon için dokunma vibrasyonu (desteklenirse)
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            }
+
+            // PC için mouseover
+            noBtn.addEventListener('mouseover', moveNoBtn);
+            
+            // Telefon için touchstart (dokunma)
+            noBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Telefonda varsayılan davranışı engelle
+                moveNoBtn();
+                
+                // Telefon için ekstra: butona yaklaşınca da kaçsın
+                const touch = e.touches[0];
+                const rect = noBtn.getBoundingClientRect();
+                const touchX = touch.clientX;
+                const touchY = touch.clientY;
+                
+                // Butonun merkezine uzaklık
+                const btnCenterX = rect.left + rect.width / 2;
+                const btnCenterY = rect.top + rect.height / 2;
+                const distance = Math.sqrt(
+                    Math.pow(touchX - btnCenterX, 2) + 
+                    Math.pow(touchY - btnCenterY, 2)
+                );
+                
+                // 100px yakınsa kaç
+                if (distance < 100) {
+                    moveNoBtn();
+                }
+            });
+            
+            // Telefon için touchmove (parmakla takip edince)
+            noBtn.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = noBtn.getBoundingClientRect();
+                const touchX = touch.clientX;
+                const touchY = touch.clientY;
+                
+                // Parmak butona 50px'den yakınsa kaç
+                if (touchX > rect.left - 50 && touchX < rect.right + 50 &&
+                    touchY > rect.top - 50 && touchY < rect.bottom + 50) {
+                    moveNoBtn();
+                }
             });
 
             // Evet butonuna tıklanınca
@@ -273,6 +321,7 @@
                 noBtn.style.left = '';
                 noBtn.style.top = '';
                 noBtn.style.zIndex = '';
+                noBtn.style.transition = '';
             });
         });
     </script>
