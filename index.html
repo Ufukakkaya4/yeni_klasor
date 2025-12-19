@@ -61,7 +61,6 @@
             position: relative;
             user-select: none;
             -webkit-user-select: none;
-            touch-action: manipulation;
         }
 
         #yesBtn {
@@ -134,7 +133,6 @@
                 width: 90px;
                 height: 45px;
                 font-size: 14px;
-                padding: 10px 20px;
             }
             
             #celebration h2 {
@@ -164,10 +162,9 @@
             const container = document.querySelector('.container');
 
             let lastMoveTime = 0;
-            const MOVE_COOLDOWN = 100; // 100ms cooldown
-            const ESCAPE_DISTANCE = 150; // Butonun kaçma mesafesi
-
-            // Butonu hareket ettiren fonksiyon
+            const MOVE_COOLDOWN = 100;
+            
+            // Butonu HEP EKRAN İÇİNDE tutacak şekilde hareket ettir
             function moveNoBtn() {
                 const now = Date.now();
                 if (now - lastMoveTime < MOVE_COOLDOWN) return;
@@ -178,105 +175,99 @@
                 const buttonWidth = noBtn.offsetWidth;
                 const buttonHeight = noBtn.offsetHeight;
                 
-                // Geniş hareket alanı (ekranın %80'i)
-                const safeMinX = 20;
-                const safeMaxX = screenWidth - buttonWidth - 20;
-                const safeMinY = 20;
-                const safeMaxY = screenHeight - buttonHeight - 20;
+                // EKRAN SINIRLARI - Buton ASLA dışarı çıkamaz
+                const minX = 20; // Sol kenardan 20px
+                const maxX = screenWidth - buttonWidth - 20; // Sağ kenardan 20px
+                const minY = 20; // Üst kenardan 20px
+                const maxY = screenHeight - buttonHeight - 20; // Alt kenardan 20px
                 
-                // Her seferinde tamamen farklı yere kaç
-                let newLeft, newTop;
-                let attempts = 0;
+                // RASTGELE ama GÜVENLİ pozisyon
+                const newLeft = Math.random() * (maxX - minX) + minX;
+                const newTop = Math.random() * (maxY - minY) + minY;
                 
-                do {
-                    // Büyük mesafelerde kaç (ekranın farklı bölgelerine)
-                    const quadrant = Math.floor(Math.random() * 4);
-                    switch(quadrant) {
-                        case 0: // Sol üst
-                            newLeft = Math.random() * (screenWidth * 0.4);
-                            newTop = Math.random() * (screenHeight * 0.4);
-                            break;
-                        case 1: // Sağ üst
-                            newLeft = screenWidth * 0.6 + Math.random() * (screenWidth * 0.4);
-                            newTop = Math.random() * (screenHeight * 0.4);
-                            break;
-                        case 2: // Sol alt
-                            newLeft = Math.random() * (screenWidth * 0.4);
-                            newTop = screenHeight * 0.6 + Math.random() * (screenHeight * 0.4);
-                            break;
-                        case 3: // Sağ alt
-                            newLeft = screenWidth * 0.6 + Math.random() * (screenWidth * 0.4);
-                            newTop = screenHeight * 0.6 + Math.random() * (screenHeight * 0.4);
-                            break;
-                    }
-                    
-                    // Sınırları kontrol et
-                    newLeft = Math.max(safeMinX, Math.min(newLeft, safeMaxX));
-                    newTop = Math.max(safeMinY, Math.min(newTop, safeMaxY));
-                    
-                    attempts++;
-                    // Minimum 100px mesafe garantisi
-                    const currentRect = noBtn.getBoundingClientRect();
-                    const distance = Math.sqrt(
-                        Math.pow(newLeft - currentRect.left, 2) + 
-                        Math.pow(newTop - currentRect.top, 2)
-                    );
-                    
-                    if (distance > 100) break;
-                } while (attempts < 5);
+                // Anlık buton pozisyonunu al
+                const currentRect = noBtn.getBoundingClientRect();
                 
-                // Animasyonlu hareket
-                noBtn.style.transition = 'all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
-                noBtn.style.position = 'fixed';
-                noBtn.style.left = `${newLeft}px`;
-                noBtn.style.top = `${newTop}px`;
-                noBtn.style.zIndex = '10';
+                // Eğer çok yakınsak biraz daha uzaklaş
+                let finalLeft = newLeft;
+                let finalTop = newTop;
                 
-                // Telefon için dokunma vibrasyonu (desteklenirse)
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-            }
-
-            // PC için mouseover
-            noBtn.addEventListener('mouseover', moveNoBtn);
-            
-            // Telefon için touchstart (dokunma)
-            noBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // Telefonda varsayılan davranışı engelle
-                moveNoBtn();
-                
-                // Telefon için ekstra: butona yaklaşınca da kaçsın
-                const touch = e.touches[0];
-                const rect = noBtn.getBoundingClientRect();
-                const touchX = touch.clientX;
-                const touchY = touch.clientY;
-                
-                // Butonun merkezine uzaklık
-                const btnCenterX = rect.left + rect.width / 2;
-                const btnCenterY = rect.top + rect.height / 2;
                 const distance = Math.sqrt(
-                    Math.pow(touchX - btnCenterX, 2) + 
-                    Math.pow(touchY - btnCenterY, 2)
+                    Math.pow(newLeft - currentRect.left, 2) + 
+                    Math.pow(newTop - currentRect.top, 2)
                 );
                 
-                // 100px yakınsa kaç
-                if (distance < 100) {
+                // Minimum 80px mesafe garantisi (ama çok da uzak değil)
+                if (distance < 80) {
+                    // Yakınsak biraz daha uzağa git
+                    const angle = Math.random() * Math.PI * 2;
+                    finalLeft = currentRect.left + Math.cos(angle) * 120;
+                    finalTop = currentRect.top + Math.sin(angle) * 120;
+                    
+                    // Sınırları kontrol et
+                    finalLeft = Math.max(minX, Math.min(finalLeft, maxX));
+                    finalTop = Math.max(minY, Math.min(finalTop, maxY));
+                }
+                
+                // Animasyon ekle
+                noBtn.style.transition = 'left 0.3s ease, top 0.3s ease';
+                noBtn.style.position = 'fixed';
+                noBtn.style.left = `${finalLeft}px`;
+                noBtn.style.top = `${finalTop}px`;
+                noBtn.style.zIndex = '10';
+            }
+
+            // PC için mouseover - her seferinde çalışsın
+            noBtn.addEventListener('mouseover', (e) => {
+                e.preventDefault();
+                moveNoBtn();
+            });
+            
+            // Buton üzerine tıklandığında da kaçsın
+            noBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                moveNoBtn();
+            });
+            
+            // PC için mousemove - fare yaklaşınca da kaçsın
+            noBtn.addEventListener('mousemove', (e) => {
+                const rect = noBtn.getBoundingClientRect();
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+                
+                // Fare butonun merkezine 40px yakınsa kaç
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const distance = Math.sqrt(
+                    Math.pow(mouseX - centerX, 2) + 
+                    Math.pow(mouseY - centerY, 2)
+                );
+                
+                if (distance < 40) {
                     moveNoBtn();
                 }
             });
+
+            // Telefon için touchstart
+            noBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                moveNoBtn();
+                
+                // Telefon vibrasyonu (destekleniyorsa)
+                if (navigator.vibrate) {
+                    navigator.vibrate(30);
+                }
+            });
             
-            // Telefon için touchmove (parmakla takip edince)
+            // Telefon için touchmove
             noBtn.addEventListener('touchmove', (e) => {
                 e.preventDefault();
                 const touch = e.touches[0];
                 const rect = noBtn.getBoundingClientRect();
-                const touchX = touch.clientX;
-                const touchY = touch.clientY;
                 
-                // Parmak butona 50px'den yakınsa kaç
-                if (touchX > rect.left - 50 && touchX < rect.right + 50 &&
-                    touchY > rect.top - 50 && touchY < rect.bottom + 50) {
+                // Parmak butona 50px yakınsa kaç
+                if (touch.clientX > rect.left - 50 && touch.clientX < rect.right + 50 &&
+                    touch.clientY > rect.top - 50 && touch.clientY < rect.bottom + 50) {
                     moveNoBtn();
                 }
             });
@@ -286,8 +277,6 @@
                 container.style.display = 'none';
                 celebrationDiv.style.display = 'block';
                 celebrationDiv.style.animation = 'fadeIn 0.5s ease forwards';
-                
-                // Konfeti efekti
                 createConfetti();
             });
 
@@ -315,9 +304,10 @@
                 }
             }
             
-            // Ekran boyutu değişince butonu sıfırla
+            // Ekran boyutu değişince butonu resetle
             window.addEventListener('resize', () => {
-                noBtn.style.position = '';
+                // Butonu sıfırla ama gizleme, sadece konumunu sıfırla
+                noBtn.style.position = 'relative';
                 noBtn.style.left = '';
                 noBtn.style.top = '';
                 noBtn.style.zIndex = '';
